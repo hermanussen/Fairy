@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Fairy</PackageId>
+    <Authors>Robin Hermanussen</Authors>
+    <Company>N/A</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>
+      A source generator that generates C# code based on Sitecore Content Serialization (SCS) .yml files.
+    </Description>
+    <PackBuildOutput>true</PackBuildOutput>
+    <Copyright>Copyright 2021 - Robin Hermanussen</Copyright>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>dotnet</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <GenerateRepositoryUrlAttribute>true</GenerateRepositoryUrlAttribute>
+    <PackOnBuild>true</PackOnBuild>
+    <PackFolder>analyzers\cs</PackFolder>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <PackageScribanIncludeSource>true</PackageScribanIncludeSource>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" />
+    <PackageReference Include="NuGetizer" Version="0.6.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Pluralize.NET" Version="1.0.2" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Scriban" Version="3.4.1" GeneratePathProperty="true" IncludeAssets="build" PrivateAssets="all" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetDependencyTargetPaths">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGPluralize_NET)\lib\netstandard2.0\Pluralize.NET.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGScriban)\lib\netstandard2.0\Scriban.dll" IncludeRuntimeDependency="false" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <EmbeddedResource Include="@(None -&gt; WithMetadataValue('Extension', '.sbntxt'))" />
+  </ItemGroup>
+
+</Project>
