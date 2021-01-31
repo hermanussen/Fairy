@@ -1,7 +1,7 @@
 ﻿namespace Templates
 {
     using System;
-{{ for item in items }}
+{{ for item in items -}}
 {{- if item.is_template }}
     /// <summary>
     /// Generated template class based on {{ item.path }}
@@ -10,12 +10,10 @@
     {
         public static readonly Guid TemplateId = Guid.Parse("{{ item.id }}");
         public static readonly string TemplateName = "{{ item.item_name }}";
-        {{ for section in (resolve_children item) -}}
-        {{- for field in (resolve_children section)}}
+        {{ for field in (resolve_template_fields_deep item) }}
         public static readonly Guid {{ friendly field.item_name }}FieldId = Guid.Parse("{{ field.id }}");
         public static readonly string {{ friendly field.item_name }}FieldName = "{{ field.item_name }}";
-        {{end -}}
-        {{- end }}
+        {{ end }}
     }
 {{ end -}}
 {{- end }}

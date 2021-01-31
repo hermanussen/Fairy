@@ -32,7 +32,8 @@ namespace Fairy
             try
             {
                 const string templatePath = "FairyTemplate.sbntxt";
-                var templateContent = EmbeddedResource.GetContent(templatePath);
+                var templateContent = GetTemplateContent(context, templatePath)
+                    ?? EmbeddedResource.GetContent(templatePath);
                 var template = Template.Parse(templateContent, templatePath);
 
                 var scriptObject = new ScriptObject();
@@ -47,6 +48,8 @@ namespace Fairy
                     templateContext.PushGlobal(ScriptObject.From(
                         new
                         {
+                            FairyVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(),
+                            AssemblyName = context.Compilation.AssemblyName,
                             Items = Repository.Evaluate()
                         }));
 
@@ -80,6 +83,36 @@ namespace Fairy
         public void Initialize(GeneratorInitializationContext context)
         {
             // No implementation needed here; the generator is entirely driven by use of AdditionalFiles
+        }
+
+        /// <summary>
+        /// Find the contents of a template file in the AdditionalFiles.
+        /// </summary>
+        /// <param name="context">The generator context, that contains additional files</param>
+        /// <param name="templatePath">The path to the template</param>
+        /// <returns></returns>
+        private string? GetTemplateContent(GeneratorExecutionContext context, string templatePath)
+        {
+            return context
+                .AdditionalFiles
+                .Where(f =>
+                {
+                    string compilationPath = Path.GetFullPath(".");
+                    string fullPath = Path.GetFullPath(f.Path);
+                    string fullTemplatePath = Path.GetFullPath(templatePath);
+
+                    if (!fullPath.StartsWith(compilationPath)
+                        || !fullTemplatePath.StartsWith(compilationPath))
+                    {
+                        // Don't allow paths outside the current compilation
+                        return false;
+                    }
+
+                    return fullPath.Equals(fullTemplatePath, StringComparison.InvariantCultureIgnoreCase);
+                })
+                .FirstOrDefault()
+                ?.GetText(context.CancellationToken)
+                ?.ToString();
         }
     }
 }

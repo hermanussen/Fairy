@@ -12,9 +12,9 @@ namespace Fairy.Utils
     /// </summary>
     public static class EmbeddedResource
     {
-        public static string GetContent(string relativePath)
+        public static string GetContent(string relativePath, Assembly? assembly = null)
         {
-            var assembly = Assembly.GetExecutingAssembly();
+            assembly ??= Assembly.GetExecutingAssembly();
             var baseName = assembly.GetName().Name;
             var resourceName = relativePath
                 .TrimStart('.')

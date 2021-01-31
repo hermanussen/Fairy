@@ -25,6 +25,8 @@ namespace Fairy.SCS
 
         public List<Guid>? BaseTemplateIds { get; set; }
 
+        public string? TemplateFieldType { get; set; }
+
         /// <summary>
         /// Gets or sets the parent item ID.
         /// </summary>
@@ -59,6 +61,17 @@ namespace Fairy.SCS
             get
             {
                 return TemplateId == SitecoreConstants.SitecoreTemplateTemplateId;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the current item is a template field.
+        /// </summary>
+        public bool IsTemplateField
+        {
+            get
+            {
+                return TemplateId == SitecoreConstants.SitecoreTemplateFieldId;
             }
         }
     }

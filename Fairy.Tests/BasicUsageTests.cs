@@ -41,30 +41,27 @@ namespace Example
             Assert.Equal("_Hero Hero Title", RunTest(compilation));
         }
 
-        private IDictionary<string, string> GetEmbeddedContents(string relativePath)
+        [Fact]
+        public void ShouldGenerateWithOwnTemplate()
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var baseName = assembly.GetName().Name;
-            var resourceName = relativePath
-                .TrimStart('.')
-                .Replace(Path.DirectorySeparatorChar, '.')
-                .Replace(Path.AltDirectorySeparatorChar, '.');
-            var name = $"{baseName}.{resourceName}.";
+            string source = @"using System;
+using SomethingUnrelated;
 
-            return assembly
-                .GetManifestResourceNames()
-                .Where(r => r.StartsWith(name)).ToDictionary(r => r, r =>
-                    {
-                        using var stream = assembly.GetManifestResourceStream(r);
+namespace Example
+{
+    class Test
+    {
+        public static string RunTest()
+        {
+            return $""{UnrelatedType.GetMessage()}"";
+        }
+    }
+}";
+            var dictionary = GetEmbeddedContents("YmlFiles/Hero");
+            dictionary.Add("FairyTemplate.sbntxt", "namespace SomethingUnrelated { public static class UnrelatedType { public static string GetMessage() { return \"from template that was defined in the project\"; } } }");
+            var compilation = GetGeneratedOutput(source, dictionary);
 
-                        if (stream == null)
-                        {
-                            throw new NotSupportedException("Unable to get embedded resource content, because the stream was null");
-                        }
-
-                        using var reader = new StreamReader(stream);
-                        return reader.ReadToEnd();
-                    });
+            Assert.Equal("from template that was defined in the project", RunTest(compilation));
         }
     }
 }

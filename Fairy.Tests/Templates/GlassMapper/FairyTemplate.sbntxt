@@ -1,0 +1,80 @@
+{{func get_field_type
+    case ($0 | string.downcase)
+        when "tristate"
+            ret "TriState"
+        when "checkbox"
+            ret "bool"
+        when "date", "datetime"
+            ret "DateTime"
+        when "number"
+            ret "float"
+        when "integer"
+            ret "int"
+        when "treelist", "treelistex", "treelist descriptive", "checklist", "multilist"
+            ret "IEnumerable<Guid>"
+        when "grouped droplink", "droplink", "lookup", "droptree", "reference", "tree"
+            ret "Guid"
+        when "file"
+            ret "File"
+        when "image"
+            ret "Image"
+        when "rich text", "html"
+            ret "string"
+        when "general link"
+            ret "link"
+        when "single-line text", "multi-line text", "frame", "text", "memo", "droplist", "grouped droplist", "valuelookup"
+            ret "string"
+        else
+            ret "string"
+    end
+end}}
+
+namespace {{ assembly_name }}.Templates
+{
+    public interface IGlassBase
+    {
+    }
+}
+
+{{ for item in items -}}
+{{- if item.is_template }}
+namespace {{ assembly_name }}.Templates
+{
+    using System;
+    using System.CodeDom.Compiler;
+    using System.Collections.Generic;
+    using Glass.Mapper.Sc.Configuration.Attributes;
+    using Glass.Mapper.Sc.Fields;
+    using global::Sitecore.Data;
+
+    [SitecoreType(TemplateId = {{ assembly_name }}.Constants.{{ friendly item.item_name }}.TemplateIdString)]
+    [GeneratedCode("Fairy", "{{ fairy_version }}")]
+    public partial interface I{{ friendly item.item_name }} : IGlassBase{{ for base in (resolve_template_base_templates_deep item) }}, {{ friendly base.item_name }}{{ end }}
+    {
+        {{ for field in (resolve_template_fields item) }}
+        [SitecoreField(FieldName = {{ assembly_name }}.Constants.{{ friendly item.item_name }}.Fields.{{ friendly field.item_name }}_FieldName)]
+        {{ get_field_type field.template_field_type }} {{ friendly field.item_name }} { get; }
+        {{ end }}
+    }
+}
+namespace {{ assembly_name }}.Constants
+{
+    using global::Sitecore.Data;
+    using System.CodeDom.Compiler;
+    [GeneratedCode("Fairy", "{{ FairyVersion }}")]
+    public struct {{ friendly item.item_name }}
+    {
+        public const string TemplateIdString = "{{ item.id}}";
+        public static readonly ID TemplateId = new ID(TemplateIdString);
+        
+        public struct Fields
+        {
+        {{ for field in (resolve_template_fields item) }}
+            public static readonly ID {{ friendly field.item_name }} = new ID("{{ field.id }}");
+            public const string {{ friendly field.item_name }}_FieldName = "{{ field.item_name }}";
+        {{ end }}
+        }
+    }
+}
+{{ end -}}
+{{- end }}

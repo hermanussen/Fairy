@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fairy.Constants;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -28,6 +29,75 @@ namespace Fairy.SCS
         public static IEnumerable<ScsFile> ResolveChildren(ScsFile item)
         {
             return Repository.Evaluate(file => file.ParentId == item.Id);
+        }
+
+        /// <summary>
+        /// Resolve the fields for a template item.
+        /// Returns empty if the item that is passed is not a template itself.
+        /// </summary>
+        /// <param name="item">Item for which to resolve</param>
+        /// <returns></returns>
+        public static IEnumerable<ScsFile> ResolveTemplateFields(ScsFile item)
+        {
+            if (!item.IsTemplate)
+            {
+                return Array.Empty<ScsFile>();
+            }
+
+            var sections = ResolveChildren(item);
+            return sections.SelectMany(ResolveChildren).Where(f => f.IsTemplateField);
+        }
+
+        /// <summary>
+        /// Resolve the fields for a template item and all of its base templates.
+        /// Returns empty if the item that is passed is not a template itself.
+        /// </summary>
+        /// <param name="item">Item for which to resolve</param>
+        /// <returns></returns>
+        public static IEnumerable<ScsFile> ResolveTemplateFieldsDeep(ScsFile item)
+        {
+            if (!item.IsTemplate)
+            {
+                return Array.Empty<ScsFile>();
+            }
+
+            var templates = new[] { item }.Concat(ResolveTemplateBaseTemplatesDeep(item));
+            return templates.SelectMany(ResolveTemplateFields);
+        }
+
+        /// <summary>
+        /// Resolve the direct base templates for a template item.
+        /// Returns empty if the item that is passed is not a template itself.
+        /// </summary>
+        /// <param name="item">Item for which to resolve</param>
+        /// <returns></returns>
+        public static IEnumerable<ScsFile> ResolveTemplateBaseTemplates(ScsFile item)
+        {
+            if(!item.IsTemplate
+                || item.BaseTemplateIds == null
+                || !item.BaseTemplateIds.Any())
+            {
+                return Array.Empty<ScsFile>();
+            }
+
+            return Repository.Evaluate(file => file.IsTemplate && item.BaseTemplateIds.Contains(file.Id));
+        }
+
+        /// <summary>
+        /// Resolve the base templates and their base templates recursively for a template item.
+        /// Returns empty if the item that is passed is not a template itself.
+        /// </summary>
+        /// <param name="item">Item for which to resolve</param>
+        /// <returns></returns>
+        public static IEnumerable<ScsFile> ResolveTemplateBaseTemplatesDeep(ScsFile item)
+        {
+            var baseTemplates = ResolveTemplateBaseTemplates(item).ToList();
+            foreach(var baseTemplate in baseTemplates)
+            {
+                baseTemplates.AddRange(ResolveTemplateBaseTemplatesDeep(baseTemplate).Except(baseTemplates));
+            }
+
+            return baseTemplates;
         }
 
         /// <summary>

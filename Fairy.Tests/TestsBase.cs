@@ -20,6 +20,16 @@ namespace Fairy.Tests
     public abstract class TestsBase
     {
         /// <summary>
+        /// This is only used to ensure that the compiler does not remove references to the assemblies that are needed when generating code.
+        /// </summary>
+        private static Array TypesToEnsureAreLoaded = new[]
+            {
+                typeof(Sitecore.Data.ID),
+                typeof(Glass.Mapper.Diagnostics.GlassModelCounter),
+                typeof(Glass.Mapper.Sc.Configuration.Attributes.SitecoreFieldAttribute)
+            };
+
+        /// <summary>
         /// Helps with AdditionalFiles by exposing them as text files.
         /// </summary>
         private class AdditionalTextYml : AdditionalText
@@ -184,6 +194,37 @@ namespace Fairy.Tests
             _output.WriteLine($"Generated code:\r\n===\r\n{string.Join("\r\n===\r\n", output)}\r\n===\r\n");
 
             return outputCompilation;
+        }
+
+        /// <summary>
+        /// Get file contents under a folder that is embedded in the test assembly.
+        /// </summary>
+        /// <param name="relativePath">Relative path to start searching from</param>
+        /// <returns>Dictionary with key=path and value=contents of the embedded file</returns>
+        protected IDictionary<string, string> GetEmbeddedContents(string relativePath)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var baseName = assembly.GetName().Name;
+            var resourceName = relativePath
+                .TrimStart('.')
+                .Replace(Path.DirectorySeparatorChar, '.')
+                .Replace(Path.AltDirectorySeparatorChar, '.');
+            var name = $"{baseName}.{resourceName}.";
+
+            return assembly
+                .GetManifestResourceNames()
+                .Where(r => r.StartsWith(name)).ToDictionary(r => r, r =>
+                {
+                    using var stream = assembly.GetManifestResourceStream(r);
+
+                    if (stream == null)
+                    {
+                        throw new NotSupportedException("Unable to get embedded resource content, because the stream was null");
+                    }
+
+                    using var reader = new StreamReader(stream);
+                    return reader.ReadToEnd();
+                });
         }
     }
 }

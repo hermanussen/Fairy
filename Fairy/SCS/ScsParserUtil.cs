@@ -24,6 +24,9 @@ namespace Fairy.SCS
             const string baseTemplateIntroLine = "- ID: \"12c33f3f-86c5-43a5-aeb4-5598cec45116\"";
             const string baseTemplateIntroLineNoQuotes = "- ID: 12c33f3f-86c5-43a5-aeb4-5598cec45116";
             const string baseTemplateParseKey = "Value: ";
+            const string fieldTypeIntroLine = "- ID: \"ab162cc0-dc80-4abf-8871-998ee5d7ba32\"";
+            const string fieldTypeIntroLineNoQuotes = "- ID: ab162cc0-dc80-4abf-8871-998ee5d7ba32";
+            const string fieldTypeParseKey = "Value: ";
 
             var textLines = text.GetText()?.ToString().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             if (textLines.Any())
@@ -82,6 +85,27 @@ namespace Fairy.SCS
                             if (Guid.TryParse(line, out baseTemplateId))
                             {
                                 result.BaseTemplateIds.Add(baseTemplateId);
+                            }
+                        }
+                    }
+                    else if(Guid.Equals(result.TemplateId, SitecoreConstants.SitecoreTemplateFieldId))
+                    {
+                        var fieldTemplateTypeLines = textLines
+                            .SkipWhile(l => !(string.Equals(fieldTypeIntroLine, l.Trim()) || string.Equals(fieldTypeIntroLineNoQuotes, l.Trim())))
+                            .SkipWhile(l => !l.TrimStart().StartsWith(fieldTypeParseKey))
+                            .TakeWhile(l => l.StartsWith("  "));
+                        foreach (string fieldTemplateTypeLine in fieldTemplateTypeLines)
+                        {
+                            string line = fieldTemplateTypeLine.Trim();
+                            if (line.StartsWith(fieldTypeParseKey))
+                            {
+                                line = line.Substring(fieldTypeParseKey.Length);
+                            }
+
+                            line = line.Trim(' ', '|', '"');
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                result.TemplateFieldType = line;
                             }
                         }
                     }
