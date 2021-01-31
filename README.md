@@ -2,6 +2,8 @@
 
 A source generator that generates C# code based on Sitecore Content Serialization (SCS) `.yml` files.
 
+![publish to nuget](https://github.com/hermanussen/Fairy/workflows/publish%20to%20nuget/badge.svg) [![Nuget](https://img.shields.io/nuget/v/Fairy)](https://www.nuget.org/packages/Fairy/) [![Nuget](https://img.shields.io/nuget/dt/Fairy?label=nuget%20downloads)](https://www.nuget.org/packages/Fairy/) [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2Fknifecore%2F)](https://twitter.com/knifecore)
+
 > :warning: This package is highly experimental! It has not been tested very well.
 
 ## Installation
