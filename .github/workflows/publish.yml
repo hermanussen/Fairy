@@ -17,6 +17,9 @@ jobs:
         with:
           dotnet-version: 5.0.101
 
+      - name: Restore NuGet packages
+        run: dotnet restore -s https://sitecore.myget.org/F/sc-packages/api/v3/index.json -s https://api.nuget.org/v3/index.json
+
       - name: Run tests
         run: dotnet test
 
