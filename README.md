@@ -6,19 +6,22 @@ A source generator that generates C# code based on Sitecore Content Serializatio
 
 > :warning: This package is highly experimental! It has not been tested very well.
 
+> :warning: Visual Studio does not support generated code very well in < .NET 5 projects, and Sitecore needs a 4.x full framework version. This results in errors when editing (though it DOES work when building).
+
 ## Installation
 
-1. Install the NuGet package in your project. Run the following command in the NuGet package manager console
+1. Ensure that you have .NET 5 installed. It does not have to be used in your project, but you do need it for the source generator to work.
+2. Install the NuGet package in your project. Run the following command in the NuGet package manager console
 ```
 Install-Package Fairy
 ```
-2. Ensure the SCS `.yml` files that you want to generate code for are added as `AdditionalFiles` in your `.csproj` file. E.g.:
+3. Ensure the SCS `.yml` files that you want to generate code for are added as `AdditionalFiles` in your `.csproj` file. E.g.:
 ```xml
 <ItemGroup>
-  <AdditionalFiles Include="../serialization/**/*.yml" />
+  <AdditionalFiles Include="../serialization/**/*.yml" Visible="false" />
 </ItemGroup>
 ```
-3. You can now use the generated classes in your code. Reference the following namespace to get to them.
+4. You can now use the generated classes in your code. Reference the following namespace to get to them.
 ```csharp
 using Templates;
 ```
@@ -30,6 +33,17 @@ If you have specific needs for the generated code, you can easily create a [Scri
 2. Ensure that the file is included in the `AdditionalFiles` for your project (the same way that you include your json files).
 3. Copy the contents of the [default template](Fairy/FairyTemplate.sbntxt), paste them in the file and save. Or find a template you like under [the templates that are used for testing](Fairy.Tests/Templates/)
 4. Change the template in any way you want, and you should observe the changes when you build your project.
+
+## Viewing generated source files
+
+Because of the Visual Studio issue that is mentioned in the warning above, it may be helpful to view the generated source files. If you add the following to your project file, you can see the generated files in the `obj\GeneratedFiles` folder.
+
+```xml
+<PropertyGroup>
+  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
+</PropertyGroup>
+```
 
 ## More
 
